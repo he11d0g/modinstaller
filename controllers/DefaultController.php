@@ -21,21 +21,18 @@ class DefaultController extends yupe\components\controllers\BackController
                     $tempPath = Yii::app()->controller->module->getTempPath();
                     $modulesPath = Yii::app()->controller->module->getModulesPath();
                     $tempFile = $tempPath.'/'.$file->name;
-                    $file->saveAs($tempFile);
-
-                    $zip = new ZipArchive();
-                    $status = $zip->open($tempFile);
-                    if($status === true)
-                        $zip->extractTo($modulesPath);
-                        $zip->close();
-                    } else
-                        $this->_error = '';
+                    if($file->saveAs($tempFile)){
+                        $phar = new Phar($tempFile);
+                        $moduleName = str_replace('.phar.zip','',$file->name);
+                        $phar->extractTo($modulesPath.'/'.$moduleName, null, true);
+                        unlink($tempFile);
+                    }
 
 
-                    unlink($tempFile);
                 }
-
-            }
+             }
+        }
         $this->render('index',array('model' => $model));
     }
+
 }
