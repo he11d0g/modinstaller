@@ -19,12 +19,13 @@ class DefaultController extends yupe\components\controllers\BackController
                 $file = CUploadedFile::getInstance($model,'file');
                 if($model->validate()) {
                     $tempPath = Yii::app()->controller->module->getTempPath();
-                    $modulesPath = Yii::app()->controller->module->getModulesPath();
+                    $moduleName = str_replace('.phar.zip','',$file->name);
+                    $modulePath = Yii::app()->controller->module->getModulesPath().'/'.$moduleName;
                     $tempFile = $tempPath.'/'.$file->name;
                     if($file->saveAs($tempFile)){
                         $phar = new Phar($tempFile);
-                        $moduleName = str_replace('.phar.zip','',$file->name);
-                        $phar->extractTo($modulesPath.'/'.$moduleName, null, true);
+                        $phar->extractTo($modulePath, null, true);
+                        copy($modulePath.'/install/'.$moduleName.'.php', Yii::getPathOfAlias('application.config.modules').'/'.$moduleName.'.php');
                         unlink($tempFile);
                     }
 
