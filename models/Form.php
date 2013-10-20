@@ -18,5 +18,20 @@ class Form extends CFormModel
         );
     }
 
+    public function saveModule()
+    {
+        $file = CUploadedFile::getInstance($this,'file');
+        $tempPath = Yii::app()->controller->module->getTempPath();
+        $moduleName = str_replace('.phar.zip','',$file->name);
+        $modulePath = Yii::app()->controller->module->getModulesPath().'/'.$moduleName;
+        $tempFile = $tempPath.'/'.$file->name;
+        if($file->saveAs($tempFile)){
+            $phar = new Phar($tempFile);
+            $phar->extractTo($modulePath, null, true);
+            copy($modulePath.'/install/'.$moduleName.'.php', Yii::getPathOfAlias('application.config.modules').'/'.$moduleName.'.php');
+            unlink($tempFile);
+        }
+    }
+
 
 }
